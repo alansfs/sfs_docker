@@ -1,0 +1,22 @@
+FROM engineyard/kontainers:ruby-2.6-v1.0.0
+
+# This will be needed by spree
+# RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
+RUN mkdir -p /usr/share/man/man1
+RUN apt-get update --allow-releaseinfo-change && apt-get install -y imagemagick libmagickcore-dev libmagickwand-dev openjdk-11-jdk wkhtmltopdf wget ca-certificates 
+RUN apt-get update --allow-releaseinfo-change && apt-get install -y poppler-utils
+RUN wget https://github.com/ess/cronenberg/releases/download/v1.0.0/cronenberg-v1.0.0-linux-amd64 -O /usr/bin/cronenberg && chmod +x /usr/bin/cronenberg
+
+RUN gem install bundler
+# Configure the main working directory. This is the base
+# directory used in any further RUN, COPY, and ENTRYPOINT
+# commands.
+RUN mkdir -p /app
+WORKDIR /app
+
+ARG RAILS_ENV
+# Copy the Gemfile and Gemfile.lock and bundle
+COPY Gemfile ./
+COPY Gemfile.lock ./
+RUN bundle install --jobs 20 --retry 5
+
